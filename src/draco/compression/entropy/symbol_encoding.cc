@@ -46,6 +46,8 @@ bool SetSymbolEncodingCompressionLevel(Options *options,
 // Computes bit lengths of the input values. If num_components > 1, the values
 // are processed in "num_components" sized chunks and the bit length is always
 // computed for the largest value from the chunk.
+// 计算输入值的位长。 如果num_components> 1，
+// 则将按 num_components 大小的块处理值，并且始终为该块中的最大值计算位长。
 static void ComputeBitLengths(const uint32_t *symbols, int num_values,
                               int num_components,
                               std::vector<uint32_t> *out_bit_lengths,
@@ -81,6 +83,7 @@ static int64_t ApproximateTaggedSchemeBits(
     total_bit_length += bit_lengths[i];
   }
   // Compute the number of entropy bits for tags.
+  // 计算tags的熵位数
   int num_unique_symbols;
   const int64_t tag_bits = ComputeShannonEntropy(
       bit_lengths.data(), static_cast<int>(bit_lengths.size()), 32,
@@ -126,22 +129,27 @@ bool EncodeSymbols(const uint32_t *symbols, int num_values, int num_components,
   }
   std::vector<uint32_t> bit_lengths;
   uint32_t max_value;
+  // num_components表示分量数，坐标有xyz，即为3
   ComputeBitLengths(symbols, num_values, num_components, &bit_lengths,
                     &max_value);
 
   // Approximate number of bits needed for storing the symbols using the tagged
   // scheme.
+  // 使用标记方案存储符号所需的大概位数。需要确定num_components参数是什么
   const int64_t tagged_scheme_total_bits =
       ApproximateTaggedSchemeBits(bit_lengths, num_components);
 
   // Approximate number of bits needed for storing the symbols using the raw
   // scheme.
+  // 使用原始方案存储符号所需的大概位数。
   int num_unique_symbols = 0;
   const int64_t raw_scheme_total_bits = ApproximateRawSchemeBits(
       symbols, num_values, max_value, &num_unique_symbols);
 
   // The maximum bit length of a single entry value that we can encode using
   // the raw scheme.
+  // 我们可以使用原始方案编码的单个条目值的最大位长。
+  // max_value的最高有效位数
   const int max_value_bit_length =
       MostSignificantBit(std::max(1u, max_value)) + 1;
 
@@ -168,6 +176,7 @@ bool EncodeSymbols(const uint32_t *symbols, int num_values, int num_components,
                                                target_buffer);
   }
   // Unknown method selected.
+  // 选择了未知的方法
   return false;
 }
 
@@ -275,9 +284,11 @@ bool EncodeRawSymbols(const uint32_t *symbols, int num_values,
                       uint32_t max_entry_value, int32_t num_unique_symbols,
                       const Options *options, EncoderBuffer *target_buffer) {
   int symbol_bits = 0;
+  // 应该是实际的编码位置
   if (num_unique_symbols > 0) {
     symbol_bits = MostSignificantBit(num_unique_symbols);
   }
+  // 寻找2进制下最高有效位
   int unique_symbols_bit_length = symbol_bits + 1;
   // Currently, we don't support encoding of more than 2^18 unique symbols.
   if (unique_symbols_bit_length > kMaxRawEncodingBitLength) {

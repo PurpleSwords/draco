@@ -48,15 +48,22 @@ class AttributesEncoder {
 
   // Encode attribute data to the target buffer.
   virtual bool EncodeAttributes(EncoderBuffer *out_buffer) {
+    // Transforms the input attribute data into a form that should be losslessly
+    // encoded (transform itself can be lossy).
+    // 将输入属性数据转换为应无损编码的形式（转换本身可能是有损的）。
     if (!TransformAttributesToPortableFormat()) {
       return false;
     }
+	//应该是这里？？？
+	// 对转换后的属性数据执行无损编码
     if (!EncodePortableAttributes(out_buffer)) {
       return false;
     }
     // Encode data needed by portable transforms after the attribute is encoded.
     // This corresponds to the order in which the data is going to be decoded by
     // the decoder.
+    // 编码属性后，对可移植转换所需的数据进行编码。 这对应于解码器将要解码数据的顺序。
+    // 对将每个属性转换为可移植格式所需的任何数据进行编码（例如，对量化值进行反量化所需的数据）。
     if (!EncodeDataNeededByPortableTransforms(out_buffer)) {
       return false;
     }

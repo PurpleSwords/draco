@@ -44,6 +44,7 @@ bool SequentialIntegerAttributeEncoder::Init(PointCloudEncoder *encoder,
     }
   }
   // Init prediction scheme.
+  // 初始化预测方案
   const PredictionSchemeMethod prediction_scheme_method =
       GetPredictionMethodFromOptions(attribute_id, *encoder->options());
 
@@ -59,6 +60,7 @@ bool SequentialIntegerAttributeEncoder::Init(PointCloudEncoder *encoder,
 bool SequentialIntegerAttributeEncoder::TransformAttributeToPortableFormat(
     const std::vector<PointIndex> &point_ids) {
   if (encoder()) {
+	  // encoder()->point_cloud()->num_points()是实际的顶点数
     if (!PrepareValues(point_ids, encoder()->point_cloud()->num_points())) {
       return false;
     }
@@ -105,6 +107,7 @@ SequentialIntegerAttributeEncoder::CreateIntPredictionScheme(
 bool SequentialIntegerAttributeEncoder::EncodeValues(
     const std::vector<PointIndex> &point_ids, EncoderBuffer *out_buffer) {
   // Initialize general quantization data.
+  // 初始化常规量化数据
   const PointAttribute *const attrib = attribute();
   if (attrib->size() == 0) {
     return true;
@@ -133,10 +136,13 @@ bool SequentialIntegerAttributeEncoder::EncodeValues(
   // result in changes of this data, e.g., by applying prediction schemes that
   // change the data in place. To preserve the portable data we store and
   // process all encoded data in a separate array.
+  // 我们需要保持可移植数据的完整性，但是几个编码步骤可能会导致此数据发生更改，例如，通过应用在适当位置更改数据的预测方案。 
+  // 为了保留可移植数据，我们在单独的数组中存储和处理所有编码数据。
   std::vector<int32_t> encoded_data(num_values);
 
   // All integer values are initialized. Process them using the prediction
   // scheme if we have one.
+  // 所有整数值均已初始化。 如果有的话，请使用预测方案进行处理。
   if (prediction_scheme_) {
     prediction_scheme_->ComputeCorrectionValues(
         portable_attribute_data, &encoded_data[0], num_values, num_components,
@@ -165,6 +171,7 @@ bool SequentialIntegerAttributeEncoder::EncodeValues(
       return false;
     }
   } else {
+	  // 无压缩部分
     // No compression. Just store the raw integer values, using the number of
     // bytes as needed.
 

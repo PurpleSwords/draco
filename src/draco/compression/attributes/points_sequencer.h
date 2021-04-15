@@ -30,6 +30,7 @@ class PointsSequencer {
   virtual ~PointsSequencer() = default;
 
   // Fills the |out_point_ids| with the generated sequence of point ids.
+  // 填充| out_point_ids | 带有生成的点ID序列。////////////////是ID，不是实际值的样子
   bool GenerateSequence(std::vector<PointIndex> *out_point_ids) {
     out_point_ids_ = out_point_ids;
     return GenerateSequenceInternal();

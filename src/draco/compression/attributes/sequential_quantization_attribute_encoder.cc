@@ -23,6 +23,7 @@ SequentialQuantizationAttributeEncoder::
 
 bool SequentialQuantizationAttributeEncoder::Init(PointCloudEncoder *encoder,
                                                   int attribute_id) {
+	// 初始化预测方案
   if (!SequentialIntegerAttributeEncoder::Init(encoder, attribute_id)) {
     return false;
   }
@@ -57,6 +58,7 @@ bool SequentialQuantizationAttributeEncoder::Init(PointCloudEncoder *encoder,
     }
   } else {
     // Compute quantization settings from the attribute values.
+	  //从属性值计算量化设置
     if (!attribute_quantization_transform_.ComputeParameters(
             *attribute, quantization_bits)) {
       return false;
@@ -72,6 +74,8 @@ bool SequentialQuantizationAttributeEncoder::
 
 bool SequentialQuantizationAttributeEncoder::PrepareValues(
     const std::vector<PointIndex> &point_ids, int num_points) {
+	// Put quantized values in portable attribute for sequential encoding.
+	// 将量化值放入可移植属性中以进行顺序编码。
   auto portable_attribute =
       attribute_quantization_transform_.InitTransformedAttribute(
           *attribute(), point_ids.size());

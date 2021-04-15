@@ -26,6 +26,7 @@ bool AttributeTransform::TransferToAttribute(PointAttribute *attribute) const {
 
 std::unique_ptr<PointAttribute> AttributeTransform::InitTransformedAttribute(
     const PointAttribute &src_attribute, int num_entries) {
+	//&src_attribute.attribute_buffer_->data_[0]是原始数据地址
   const int num_components = GetTransformedNumComponents(src_attribute);
   const DataType dt = GetTransformedDataType(src_attribute);
   GeometryAttribute va;

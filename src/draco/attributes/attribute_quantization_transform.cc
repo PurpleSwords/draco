@@ -136,6 +136,7 @@ bool AttributeQuantizationTransform::ComputeParameters(
   const std::unique_ptr<float[]> max_values(new float[num_components]);
   const std::unique_ptr<float[]> att_val(new float[num_components]);
   // Compute minimum values and max value difference.
+  //计算最大最小值的差
   attribute.GetValue(AttributeValueIndex(0), att_val.get());
   attribute.GetValue(AttributeValueIndex(0), min_values_.data());
   attribute.GetValue(AttributeValueIndex(0), max_values.get());
@@ -152,6 +153,7 @@ bool AttributeQuantizationTransform::ComputeParameters(
       }
     }
   }
+  // 检查所得值是否合法
   for (int c = 0; c < num_components; ++c) {
     if (std::isnan(min_values_[c]) || std::isinf(min_values_[c]) ||
         std::isnan(max_values[c]) || std::isinf(max_values[c])) {
@@ -239,6 +241,7 @@ void AttributeQuantizationTransform::GeneratePortableAttribute(
   const int num_components = attribute.num_components();
 
   // Quantize all values using the order given by point_ids.
+  // 使用point_ids给出的顺序对所有值进行量化。
   int32_t *const portable_attribute_data = reinterpret_cast<int32_t *>(
       target_attribute->GetAddress(AttributeValueIndex(0)));
   const uint32_t max_quantized_value = (1 << (quantization_bits_)) - 1;

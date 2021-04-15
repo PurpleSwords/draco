@@ -103,6 +103,7 @@ Status ExpertEncoder::EncodeMeshToBuffer(const Mesh &m,
                                          EncoderBuffer *out_buffer) {
   std::unique_ptr<MeshEncoder> encoder;
   // Select the encoding method only based on the provided options.
+  // 根据选项确定编码方法
   int encoding_method = options().GetGlobalInt("encoding_method", -1);
   if (encoding_method == -1) {
     // For now select the edgebreaker for all options expect of speed 10

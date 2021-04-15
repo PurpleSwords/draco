@@ -21,6 +21,8 @@ void ConvertSignedIntsToSymbols(const int32_t *in, int in_values,
   // Convert the quantized values into a format more suitable for entropy
   // encoding.
   // Put the sign bit into LSB pos and shift the rest one bit left.
+  // 将量化值转换为更适合熵编码的格式。
+  // 将符号位放入LSB pos，然后将其余位左移一位。
   for (int i = 0; i < in_values; ++i) {
     out[i] = ConvertSignedIntToSymbol(in[i]);
   }

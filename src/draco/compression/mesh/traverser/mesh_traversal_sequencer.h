@@ -76,10 +76,13 @@ class MeshTraversalSequencer : public PointsSequencer {
   bool GenerateSequenceInternal() override {
     // Preallocate memory for storing point indices. We expect the number of
     // points to be the same as the number of corner table vertices.
+    // 预分配内存以存储点索引
     out_point_ids()->reserve(traverser_.corner_table()->num_vertices());
 
     traverser_.OnTraversalStart();
+	// corner_order_好像是已经被量化了
     if (corner_order_) {
+		// 大小与多边形数量一致（三角剖分后就是三角网数）
       for (uint32_t i = 0; i < corner_order_->size(); ++i) {
         if (!ProcessCorner(corner_order_->at(i))) {
           return false;

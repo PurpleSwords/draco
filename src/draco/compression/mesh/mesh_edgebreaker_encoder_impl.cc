@@ -47,6 +47,8 @@ bool MeshEdgebreakerEncoderImpl<TraversalEncoder>::Init(
     MeshEdgebreakerEncoder *encoder) {
   encoder_ = encoder;
   mesh_ = encoder->mesh();
+  // 此时拿到的值还是原始值
+  // 对应的地址： mesh_->attributes_[0]->attribute_buffer_->data()
   attribute_encoder_to_data_id_map_.clear();
 
   if (encoder_->options()->IsGlobalOptionSet("split_mesh_on_seams")) {
@@ -58,6 +60,7 @@ bool MeshEdgebreakerEncoderImpl<TraversalEncoder>::Init(
   } else {
     use_single_connectivity_ = false;
   }
+  //use_single_connectivity_ = true;
   return true;
 }
 
@@ -242,6 +245,7 @@ bool MeshEdgebreakerEncoderImpl<TraversalEncoder>::
   encoder_->buffer()->Encode(att_data_id);
 
   // Also encode the type of the encoder that we used.
+  // 还对我们使用的编码器的类型进行编码。
   int32_t element_type = MESH_VERTEX_ATTRIBUTE;
   MeshTraversalMethod traversal_method;
   if (att_data_id >= 0) {
@@ -273,6 +277,10 @@ Status MeshEdgebreakerEncoderImpl<TraversalEncoder>::EncodeConnectivity() {
   // together, unless the option |use_single_connectivity_| is set in which case
   // we break the mesh along attribute seams and use the same connectivity for
   // all attributes.
+  // 要对网格进行编码，我们需要存储在角表中的面连接性数据。 
+  // 要计算连通性，我们必须使用与POSITION属性关联的索引，
+  // 因为它们定义了可以将哪些边连接在一起，除非使用| use_single_connectivity_ |选项。 
+  // 在这种情况下，我们将沿着属性接缝断开网格，并对所有属性使用相同的连通性。
   if (use_single_connectivity_) {
     corner_table_ = CreateCornerTableFromAllAttributes(mesh_);
   } else {
@@ -292,8 +300,11 @@ Status MeshEdgebreakerEncoderImpl<TraversalEncoder>::EncodeConnectivity() {
   // because some of the vertices of the input mesh can be ignored (e.g.
   // vertices on degenerated faces or isolated vertices not attached to any
   // face).
+  // 还对将要编码的顶点总数进行编码。 
+  // 这可能与mesh _->num_points()+num_new_vertices不同，因为可以忽略输入网格的某些顶点（例如，退化面上的顶点或未附着到任何面上的孤立顶点）。
   const uint32_t num_vertices_to_be_encoded =
       corner_table_->num_vertices() - corner_table_->NumIsolatedVertices();
+  //将指定的整数编码为varint。
   EncodeVarint(num_vertices_to_be_encoded, encoder_->buffer());
 
   const uint32_t num_faces =
@@ -319,10 +330,11 @@ Status MeshEdgebreakerEncoderImpl<TraversalEncoder>::EncodeConnectivity() {
   processed_connectivity_corners_.reserve(corner_table_->num_faces());
   pos_encoding_data_.num_values = 0;
 
+  // 查找并存储有关输入网格中所有孔的数据。
   if (!FindHoles()) {
     return Status(Status::DRACO_ERROR, "Failed to process mesh holes.");
   }
-
+  // 初始化编码非位置属性所需的数据
   if (!InitAttributeData()) {
     return Status(Status::DRACO_ERROR, "Failed to initialize attribute data.");
   }
@@ -330,6 +342,7 @@ Status MeshEdgebreakerEncoderImpl<TraversalEncoder>::EncodeConnectivity() {
   const uint8_t num_attribute_data =
       static_cast<uint8_t>(attribute_data_.size());
   encoder_->buffer()->Encode(num_attribute_data);
+  // 设置我们需要对连接性进行编码的非位置属性数据的数量。
   traversal_encoder_.SetNumAttributeData(num_attribute_data);
 
   const int num_corners = corner_table_->num_corners();
@@ -375,6 +388,7 @@ Status MeshEdgebreakerEncoderImpl<TraversalEncoder>::EncodeConnectivity() {
       // the first encoded corner corresponds to the tip corner of the regular
       // edgebreaker traversal (essentially the initial face can be then viewed
       // as a TOPOLOGY_C face).
+	  // 从“下一个”角的相反面开始压缩。 这样，第一个编码的角对应于常规edgebreaker遍历的尖端角（基本上，初始面可被视为TOPOLOGY_C面）。
       init_face_connectivity_corners.push_back(
           corner_table_->Next(corner_index));
       const CornerIndex opp_id =

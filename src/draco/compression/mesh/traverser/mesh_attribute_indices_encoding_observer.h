@@ -51,9 +51,11 @@ class MeshAttributeIndicesEncodingObserver {
     const PointIndex point_id =
         mesh_->face(FaceIndex(corner.value() / 3))[corner.value() % 3];
     // Append the visited attribute to the encoding order.
+	// 将访问属性增加到编码顺序
     sequencer_->AddPointId(point_id);
 
     // Keep track of visited corners.
+	// 跟踪访问的角
     encoding_data_->encoded_attribute_value_index_to_corner_map.push_back(
         corner);
 

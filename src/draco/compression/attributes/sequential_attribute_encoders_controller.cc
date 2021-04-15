@@ -49,10 +49,12 @@ bool SequentialAttributeEncodersController::Init(PointCloudEncoder *encoder,
 
 bool SequentialAttributeEncodersController::EncodeAttributesEncoderData(
     EncoderBuffer *out_buffer) {
+	// 对解码器所需的数据进行编码
   if (!AttributesEncoder::EncodeAttributesEncoderData(out_buffer)) {
     return false;
   }
   // Encode a unique id of every sequential encoder.
+  // 对每个顺序编码器的唯一ID进行编码。
   for (uint32_t i = 0; i < sequential_encoders_.size(); ++i) {
     out_buffer->Encode(sequential_encoders_[i]->GetUniqueId());
   }
@@ -61,6 +63,8 @@ bool SequentialAttributeEncodersController::EncodeAttributesEncoderData(
 
 bool SequentialAttributeEncodersController::EncodeAttributes(
     EncoderBuffer *buffer) {
+	// 填充| out_point_ids | 带有生成的点ID序列。
+	// GenerateSequence里面生成的序列，应该是在这量化的？
   if (!sequencer_ || !sequencer_->GenerateSequence(&point_ids_)) {
     return false;
   }

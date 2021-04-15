@@ -84,6 +84,7 @@ CreatePredictionSchemeForEncoder(PredictionSchemeMethod method, int att_id,
                                  const TransformT &transform) {
   const PointAttribute *const att = encoder->point_cloud()->attribute(att_id);
   if (method == PREDICTION_UNDEFINED) {
+	  // 自动选择预测方案
     method = SelectPredictionMethod(att_id, encoder);
   }
   if (method == PREDICTION_NONE) {
@@ -95,6 +96,9 @@ CreatePredictionSchemeForEncoder(PredictionSchemeMethod method, int att_id,
     // but unfortunately there is not nice work around for this without using
     // RTTI (double dispatch and similar concepts will not work because of the
     // template nature of the prediction schemes).
+    // 将编码器转换为网格编码器。 如果还有其他编码器决定使用TRIANGULAR_MESH作为返回类型，则不一定安全。
+    // 但不幸的是，如果不使用RTTI，就无法解决此问题
+    // （由于预测方案的模板性质，双重调度和类似概念将无法正常工作）。
     const MeshEncoder *const mesh_encoder =
         static_cast<const MeshEncoder *>(encoder);
     auto ret = CreateMeshPredictionScheme<

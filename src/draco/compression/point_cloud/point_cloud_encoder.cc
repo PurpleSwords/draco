@@ -40,13 +40,17 @@ Status PointCloudEncoder::Encode(const EncoderOptions &options,
   }
   DRACO_RETURN_IF_ERROR(EncodeHeader())
   DRACO_RETURN_IF_ERROR(EncodeMetadata())
+  // 初始化用，无视该部分（确认只是各种初始化，还未进行量化）
   if (!InitializeEncoder()) {
     return Status(Status::DRACO_ERROR, "Failed to initialize encoder.");
   }
+  // 只是判断用，不是具体执行部分
   if (!EncodeEncoderData()) {
     return Status(Status::DRACO_ERROR, "Failed to encode internal data.");
   }
+  // 几何数据编码
   DRACO_RETURN_IF_ERROR(EncodeGeometryData());
+  // 关键部分应该就是在这里面
   if (!EncodePointAttributes()) {
     return Status(Status::DRACO_ERROR, "Failed to encode point attributes.");
   }
@@ -108,6 +112,7 @@ bool PointCloudEncoder::EncodePointAttributes() {
 
   // Initialize all the encoders (this is used for example to init attribute
   // dependencies, no data is encoded in this step).
+  // 初始化所有编码器（例如，用于初始化属性相关性，此步骤中未编码任何数据）。
   for (auto &att_enc : attributes_encoders_) {
     if (!att_enc->Init(this, point_cloud_)) {
       return false;
@@ -115,12 +120,14 @@ bool PointCloudEncoder::EncodePointAttributes() {
   }
 
   // Rearrange attributes to respect dependencies between individual attributes.
+  // 重新排列属性以尊重各个属性之间的依赖性。没有进行编码
   if (!RearrangeAttributesEncoders()) {
     return false;
   }
 
   // Encode any data that is necessary to create the corresponding attribute
   // decoder.
+  // 对创建相应属性解码器所需的任何数据进行编码。（对编码器进行编码，没有对数据进行编码）
   for (int att_encoder_id : attributes_encoder_ids_order_) {
     if (!EncodeAttributesEncoderIdentifier(att_encoder_id)) {
       return false;
@@ -129,6 +136,7 @@ bool PointCloudEncoder::EncodePointAttributes() {
 
   // Also encode any attribute encoder data (such as the info about encoded
   // attributes).
+  // 还可以对任何属性编码器数据进行编码（例如，有关编码属性的信息）。未发现对顶点坐标等原始数据进行了编码操作
   for (int att_encoder_id : attributes_encoder_ids_order_) {
     if (!attributes_encoders_[att_encoder_id]->EncodeAttributesEncoderData(
             buffer_)) {
@@ -136,6 +144,7 @@ bool PointCloudEncoder::EncodePointAttributes() {
     }
   }
 
+  // 应该是这里进行的编码操作
   // Lastly encode all the attributes using the provided attribute encoders.
   if (!EncodeAllAttributes()) {
     return false;
@@ -207,6 +216,7 @@ bool PointCloudEncoder::RearrangeAttributesEncoders() {
   attributes_encoder_ids_order_.resize(attributes_encoders_.size());
   std::vector<bool> is_encoder_processed(attributes_encoders_.size(), false);
   uint32_t num_processed_encoders = 0;
+  // 调整编码器对各个属性编码的顺序
   while (num_processed_encoders < attributes_encoders_.size()) {
     // Flagged when any of the encoder get processed.
     bool encoder_processed = false;
@@ -218,6 +228,9 @@ bool PointCloudEncoder::RearrangeAttributesEncoders() {
       bool can_be_processed = true;
       for (uint32_t p = 0; p < attributes_encoders_[i]->num_attributes(); ++p) {
         const int32_t att_id = attributes_encoders_[i]->GetAttributeId(p);
+        // NumParentAttributes:
+        // 返回在编码指定属性之前需要编码的属性数量。
+        // 请注意，该属性由其点属性ID指定。
         for (int ap = 0;
              ap < attributes_encoders_[i]->NumParentAttributes(att_id); ++ap) {
           const uint32_t parent_att_id =
@@ -234,6 +247,7 @@ bool PointCloudEncoder::RearrangeAttributesEncoders() {
         continue;  // Try to process the encoder in the next iteration.
       }
       // Encoder can be processed. Update the encoding order.
+      // 编码器可以处理。更新编码顺序。
       attributes_encoder_ids_order_[num_processed_encoders++] = i;
       is_encoder_processed[i] = true;
       encoder_processed = true;

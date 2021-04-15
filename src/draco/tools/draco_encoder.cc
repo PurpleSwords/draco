@@ -258,6 +258,7 @@ int main(int argc, char **argv) {
 
   std::unique_ptr<draco::PointCloud> pc;
   draco::Mesh *mesh = nullptr;
+  // obj以mesh进行加载
   if (!options.is_point_cloud) {
     auto maybe_mesh =
         draco::ReadMeshFromFile(options.input, options.use_metadata);
@@ -349,7 +350,7 @@ int main(int argc, char **argv) {
     // Create a default output file by attaching .drc to the input file name.
     options.output = options.input + ".drc";
   }
-
+  // 打印当前参数的选项设置
   PrintOptions(*pc.get(), options);
 
   int ret = -1;

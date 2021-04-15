@@ -71,6 +71,7 @@ bool KdTreeAttributesEncoder::TransformAttributesToPortableFormat() {
             att->num_components(), range);
       } else {
         // Compute quantization settings from the attribute values.
+		// 从属性值计算量化设置
         if (!attribute_quantization_transform.ComputeParameters(
                 *att, quantization_bits)) {
           return false;

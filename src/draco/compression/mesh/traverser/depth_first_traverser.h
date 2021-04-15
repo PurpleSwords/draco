@@ -84,6 +84,7 @@ class DepthFirstTraverser
     }
 
     // Start the actual traversal.
+	// 开始实际遍历
     while (!corner_traversal_stack_.empty()) {
       // Currently processed corner.
       corner_id = corner_traversal_stack_.back();
@@ -114,6 +115,7 @@ class DepthFirstTraverser
         // The current vertex has been already visited or it was on a boundary.
         // We need to determine whether we can visit any of it's neighboring
         // faces.
+        // 当前顶点已被访问或位于边界上。 我们需要确定是否可以访问它的任何相邻面孔。
         const CornerIndex right_corner_id =
             this->corner_table()->GetRightCorner(corner_id);
         const CornerIndex left_corner_id =
